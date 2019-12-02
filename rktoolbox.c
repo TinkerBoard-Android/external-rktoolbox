@@ -8,6 +8,7 @@
 #define VENDOR_PATH    "/vendor/bin/rk_"
 
 #define MODULE_NAME     "rktoolbox"
+#define MODULE_VERSION     "V0.3"
 
 void dump_info(void);
 
@@ -50,6 +51,7 @@ static void SIGPIPE_handler(int signal) {
 
 static void usage(void)
 {
+    printf("Version: %s\r\n",MODULE_VERSION);
     printf("Usage:\r\n");
     printf("       rktoolbox modulename -func\n");
     printf("       rktoolbox -func\n");
@@ -99,6 +101,12 @@ int main(int argc, char **argv)
         }
     }
 
+    if(!strcmp("-version", name))
+    {
+        printf("Version: %s\r\n",MODULE_VERSION);
+        return 0;
+    }
+    else
     if(!strcmp("-help", name))
     {
         usage();

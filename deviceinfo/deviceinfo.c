@@ -6,6 +6,7 @@
 #include "handle.h"
 
 #define MODULE_NAME     "deviceinfo"
+#define MODULE_VERSION     "V0.3"
 
 static void usage(void);
 static void dump_info(void);
@@ -25,6 +26,8 @@ static struct {
     {"ro.build.type","Build Type"},
     {"ro.build.version.incremental","Build Version"},
     {"ro.vendor.build.security_patch","Security Patch Level"},
+    {"ro.com.google.gmsversion","GMS Version"},
+    {"ro.com.google.gtvsversion","GTVS Version"},
     {"persist.vendor.framebuffer.main","Screen Reslution"},
     {"ro.sf.lcd_density","Screen Density"},
     {"ro.rksdk.version","SDK Version"},
@@ -39,12 +42,35 @@ static struct {
     char *info;
     void (*func)(char *value);
 } system_node[] = {
+    {"dmesg|grep GiB |awk '{ print $5 $6 $7 }'","Emmc Size : ", enter_handle},//8GB
+    {"cat d/mmc2/ios |head -8|tail -1|awk '{ print $4 $5 }'","Emmc Timing : ", enter_handle},//hs200
+    {"cat d/mmc2/clock","Emmc Freqs : ", enter_handle},//150MHZ
+    {"cat /sys/kernel/debug/clk/clk_wifi/clk_rate","Wifi Freqs : ", enter_handle},//2.4G
+    {"cat /sys/bus/sdio/devices/mmc1:0001:1/vendor","Wifi Vendor ID : ", enter_handle},//
+    {"cat /sys/bus/sdio/devices/mmc1:0001:1/device","Wifi Device ID : ", enter_handle},//
     {"cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies","CPU Freqs : ", enter_handle},
     {"cat /sys/class/devfreq/*.gpu/available_frequencies","GPU Freqs : ", enter_handle},
     {"cat /sys/class/devfreq/dmc/available_frequencies","DDR Freqs : ", enter_handle},
+    {"cat /sys/class/devfreq/dmc/available_frequencies","DDR Freqs : ", enter_handle},
     {"cat /proc/meminfo | grep MemTotal", "", enter_handle},
-//    {"cat /proc/meminfo | grep MemFree", "", enter_handle},
+    {"dumpsys uimode|grep mCurUiMode", "UiMode:", enter_handle},
     {0,0, NULL},
+};
+
+static struct {
+    char *cmd;
+    void (*func)(char *value);
+} save_node[] = {
+    {"mkdir -p /data/deviceinfo/dumpinfo", enter_handle},
+    {"getprop |grep version > /data/deviceinfo/dumpinfo/allversion.txt", enter_handle},
+    {"dumpsys meminfo > /data/deviceinfo/dumpinfo/meminfo.txt", enter_handle},
+    {"busybox cp /vendor/commit_id.xml /data/deviceinfo/dumpinfo/", enter_handle},
+    {"dmesg > /data/deviceinfo/dumpinfo/dmesg.txt", enter_handle},
+    {"logcat -d > /data/deviceinfo/dumpinfo/logcat.txt", enter_handle},
+    {"getprop > /data/deviceinfo/dumpinfo/getprop.txt", enter_handle},
+    {"bugreport > /data/deviceinfo/dumpinfo/bugreport.txt", enter_handle},
+    {"cd /data/deviceinfo/;tar -zcvf dumpinfo-device.tar.gz dumpinfo/;cd -", enter_handle},
+    {0, NULL},
 };
 
 static struct {
@@ -58,6 +84,9 @@ static struct {
     {"cat /sys/class/devfreq/*.gpu/available_frequencies","GPU Freqs :", enter_handle},
     {"cat /sys/class/devfreq/dmc/cur_freq","DDR CurFreq :", enter_handle},
     {"cat /sys/class/devfreq/dmc/available_frequencies","DDR Freqs :", enter_handle},
+    {"cat /sys/kernel/debug/clk/clk_rga/clk_rate","RGA Freqs : ", enter_handle},
+    {"cat /sys/kernel/debug/clk/aclk_vpu/clk_rate","VPU Freqs : ", enter_handle},
+    {"cat d/mmc2/clock","Emmc Freqs : ", enter_handle},
     //{"cat /sys/kernel/debug/regulator/regulator_summary","Regulator Summary : \n", enter_handle},
     {"cat /d/opp/opp_summary","OPP Summary :\n", enter_handle},
     {0,0, NULL},
@@ -80,6 +109,66 @@ static int shell(char *cmd, char *result)
 //        printf("result:%s",result);
     pclose(fstream);
     return 0;
+}
+
+void dump_drm_info()
+{
+  char value[1024];
+  if(shell("getprop drm.service.enabled", value) == 0)
+  {
+      if(strstr(value,"true")){
+         printf("DRM Support: true\n");
+         memset(value, 0, sizeof(value));
+         //widewine drm info
+         if(shell("test -e vendor/lib/libRkWvClient.so && echo L1", value) == 0)
+         {
+            if(!strcmp(value,"L1")){
+                printf("WideWine DRM Libs:L1\n");
+            } else {
+                printf("WideWine DRM Libs:L3\n");
+            }
+         }
+         //playready drm info
+         memset(value, 0, sizeof(value));
+         if(shell("test -e vendor/lib/mediadrm/libplayreadydrmplugin.so && echo Support", value) == 0)
+         {
+            if(!strcmp(value,"Support")){
+                memset(value, 0, sizeof(value));
+                shell("test -e vendor/lib/optee_armtz/d71d2527-5741-40a9-9ef51a2ece05631d.ta && echo SL3000", value);
+                if(!strcmp(value,"SL3000")){
+                   printf("PlayReady DRM Libs:SL3000\n");
+                } else {
+                   printf("PlayReady DRM Libs:SL2000\n");
+                }
+            } else {
+                printf("PlayReady DRM Libs: Unsupport\n");
+            }
+         }
+      } else {
+         printf("DRM Support: false\n");
+
+      }
+  }
+}
+
+void save_system_log(void)
+{
+    FILE *fstream=NULL;
+    char cmd[1024 * 10];
+    printf("Start: save dump info log...\n");
+    system("rm data/deviceinfo/dumpinfo -rf");
+    for(int i=0; save_node[i].cmd; i++)
+    {
+       //printf("cmd:%s",save_node[i].cmd);
+       if(NULL==(fstream=popen(save_node[i].cmd,"r")))
+       {
+               fprintf(stderr,"execute command failed: %s",strerror(errno));
+               //return;
+       }
+       pclose(fstream);
+       fstream=NULL;
+     }
+     printf("End:already save dump info to data/deviceinfo/dumpinfo-device.tar.gz\n");
 }
 
 static void dump_info(void)
@@ -106,6 +195,8 @@ static void dump_info(void)
         printf("%s%s \r\n",system_node[i].info, value);
         memset(value, 0, sizeof(value));
     }
+    dump_drm_info();
+    //save_dump_info();
 }
 
 static void dvfs_info(void)
@@ -132,6 +223,7 @@ static void dvfs_info(void)
 static void usage(void)
 {
     printf("Usage:\r\n");
+    printf("       deviceinfo  -log\n");
     printf("       deviceinfo  -dump\n");
     printf("       deviceinfo  -dvfs\n");
     printf("       deviceinfo  -help\n");
@@ -140,6 +232,7 @@ static void usage(void)
     printf("  -help       Print help information\n");
     printf("  -dvfs       Dump kernel dvfs info\n");
     printf("  -dump       Dump system info\n");
+    printf("  -log       save system log to data/deviceinfo\n");
 }
 
 int main(int argc, char **argv)
@@ -160,7 +253,18 @@ int main(int argc, char **argv)
        printf("i = %d  value = %s \r\n",i, argv[i]);
    }
 #endif
-
+   if(!strcmp(argv[1],"-version"))
+   {
+        printf("Version: %s\r\n",MODULE_VERSION);
+        return 0;
+   }
+   else
+   if(!strcmp(argv[1], "-log"))
+   {
+       save_system_log();
+       return 0;
+   }
+   else
    if(!strcmp(argv[1], "-dump"))
    {
        dump_info();
