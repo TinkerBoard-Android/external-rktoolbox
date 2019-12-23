@@ -6,7 +6,7 @@
 #include "handle.h"
 
 #define MODULE_NAME     "deviceinfo"
-#define MODULE_VERSION     "V0.3"
+#define MODULE_VERSION     "V0.4"
 
 static void usage(void);
 static void dump_info(void);
@@ -155,7 +155,7 @@ void save_system_log(void)
 {
     FILE *fstream=NULL;
     char cmd[1024 * 10];
-    printf("Start: save dump info log...\n");
+    printf("Start: save dump info log,need few minutes...\n");
     system("rm data/deviceinfo/dumpinfo -rf");
     for(int i=0; save_node[i].cmd; i++)
     {
@@ -223,16 +223,21 @@ static void dvfs_info(void)
 static void usage(void)
 {
     printf("Usage:\r\n");
+    printf("       deviceinfo  -devicetest \n");
+    printf("       deviceinfo  -stresstest\n");
     printf("       deviceinfo  -log\n");
     printf("       deviceinfo  -dump\n");
     printf("       deviceinfo  -dvfs\n");
     printf("       deviceinfo  -help\n");
     printf("\n");
     printf("Miscellaneous:\n");
-    printf("  -help       Print help information\n");
-    printf("  -dvfs       Dump kernel dvfs info\n");
-    printf("  -dump       Dump system info\n");
-    printf("  -log       save system log to data/deviceinfo\n");
+    printf("  -help             Print help information\n");
+    printf("  -version          Print version information\n");
+    printf("  -dvfs             Dump kernel dvfs info\n");
+    printf("  -dump             Dump system info\n");
+    printf("  -log              save system log to data/deviceinfo\n");
+    printf("  -stresstest       start stresstest\n");
+    printf("  -devicetest       start devicetest (agingtest)\n");
 }
 
 int main(int argc, char **argv)
@@ -257,6 +262,18 @@ int main(int argc, char **argv)
    {
         printf("Version: %s\r\n",MODULE_VERSION);
         return 0;
+   }
+   else
+   if(!strcmp(argv[1], "-stresstest"))
+   {
+       system("am start -a android.rk.intent.action.startStressTest");
+       return 0;
+   }
+   else
+   if(!strcmp(argv[1], "-devicetest"))
+   {
+       system("am start -a rk.intent.action.startDevicetest");
+       return 0;
    }
    else
    if(!strcmp(argv[1], "-log"))
