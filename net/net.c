@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include "handle.h"
 
-#define MODULE_NAME     "display"
+#define MODULE_NAME     "net"
 #define MODULE_VERSION     "V1.0"
 
 static void usage(void);
@@ -16,17 +16,7 @@ static struct {
     char *property;
     char *info;
 } system_property[] = {
-    {"persist.vendor.framebuffer.main","Screen Reslution"},
-    {"ro.sf.lcd_density","Screen Density"},
-    {"vendor.hwc.enable","HWC Enable"},
-    {"vendor.hwc.device.main","Device Main"},
-    {"persist.vendor.resolution.main","HDMI Resolution"},
-    {"persist.vendor.overscan.main","HDMI Scale"},
-    {"persist.vendor.color.main","HDMI Color"},
-    {"persist.vendor.brightness.main","Brightness"},
-    {"persist.vendor.contrast.main","Contrast"},
-    {"persist.vendor.hue.main","Hue"},
-    {"persist.vendor.saturation.main","Saturation"},
+    {"vendor.wifi.state","Wifi State"},
     {0,0},
 };
 
@@ -35,13 +25,8 @@ static struct {
     char *info;
     void (*func)(char *value);
 } system_node[] = {
-    {"cat sys/class/misc/hdmi_hdcp1x/status","HDCP1X Status : ", enter_handle},
-    {"cat /sys/class/drm/card0-HDMI-A-1/enabled","HDMI Enabled : ", enter_handle},
-    {"cat /sys/class/drm/card0-HDMI-A-1/status","HDMI Connect : ", enter_handle},
-    {"cat /sys/class/drm/card0-HDMI-A-1/modes","HDMI Modes :\n ", enter_handle},
-    {"cat /d/dw-hdmi/status","HDMI Status :\n", enter_handle},
-    {"/system/bin/saveBaseParameter -p","", enter_handle},
-    {"cat /d/cec/cec0/status","HDMI CEC Status :\n ", enter_handle},
+    {"busybox ifconfig eth0","Ethernet Config : \n", enter_handle},
+    {"busybox ifconfig wlan0","Wlan Config : \n", enter_handle},
     {0,0, NULL},
 };
 
@@ -49,21 +34,14 @@ static struct {
     char *cmd;
     void (*func)(char *value);
 } save_node[] = {
-    {"mkdir -p /data/display/hdmi_log", enter_handle},
-    {"getprop |grep version > /data/display/hdmi_log/allversion.txt", enter_handle},
-    {"busybox cp /vendor/commit_id.xml /data/display/hdmi_log/", enter_handle},
-    {"dmesg > /data/display/hdmi_log/dmesg.txt", enter_handle},
-    {"logcat -d > /data/display/hdmi_log/logcat.txt", enter_handle},
-    {"getprop > /data/display/hdmi_log/getprop.txt", enter_handle},
-    {"dumpsys window > /data/display/hdmi_log/dumpsys_window.txt", enter_handle},
-    {"dumpsys SurfaceFlinger > /data/display/hdmi_log/dumpsys_surfaceflinger.txt", enter_handle},
-    {"cat /d/dw-hdmi/status > /data/display/hdmi_log/hdmi_status.txt", enter_handle},
-    {"cat /d/dw-hdmi/ctrl > /data/display/hdmi_log/hdmi_ctrl.txt", enter_handle},
-    {"cat /d/dw-hdmi/phy > /data/display/hdmi_log/hdmi_phy.txt", enter_handle},
-    {"cat /sys/class/drm/card0-HDMI-A-1/edid > /data/display/hdmi_log/hdmi_edid.bin", enter_handle},
-    {"/system/bin/saveBaseParameter -p > /data/display/hdmi_log/saveBaseParameter.txt", enter_handle},
-    {"cat /d/cec/cec0/status > /data/display/hdmi_log/hdmi_cec.txt", enter_handle},
-    {"cd /data/display/;tar -zcvf hdmi_log.tar.gz hdmi_log/;cd -", enter_handle},
+    {"mkdir -p /data/net/net_log", enter_handle},
+    {"getprop |grep version > /data/net/net_log/allversion.txt", enter_handle},
+    {"busybox cp /vendor/commit_id.xml /data/net/net_log/", enter_handle},
+    {"dmesg > /data/net/net_log/dmesg.txt", enter_handle},
+    {"logcat -d > /data/net/net_log/logcat.txt", enter_handle},
+    {"getprop > /data/net/net_log/getprop.txt", enter_handle},
+    {"busybox ifconfig > /data/net/net_log/ifconfig.txt", enter_handle},
+    {"cd /data/net/;tar -zcvf net_log.tar.gz net_log/;cd -", enter_handle},
     {0, NULL},
 };
 
@@ -90,8 +68,8 @@ void save_log(void)
 {
     FILE *fstream=NULL;
     char cmd[1024 * 10];
-    printf("Start: save display info log...\n");
-    system("rm data/display/ -rf");
+    printf("Start: save net info log...\n");
+    system("rm data/net/ -rf");
     for(int i=0; save_node[i].cmd; i++)
     {
        //printf("cmd:%s",save_node[i].cmd);
@@ -103,7 +81,7 @@ void save_log(void)
        pclose(fstream);
        fstream=NULL;
      }
-     printf("End:already save dump info to data/display/hdmi_log.tar.gz\n");
+     printf("End:already save dump info to data/net/net_log.tar.gz\n");
 }
 
 static void dump_info(void)
@@ -135,16 +113,16 @@ static void dump_info(void)
 static void usage(void)
 {
     printf("Usage:\r\n");
-    printf("       display  -log\n");
-    printf("       display  -dump\n");
-    printf("       display  -version\n");
-    printf("       display  -help\n");
+    printf("       net  -log\n");
+    printf("       net  -dump\n");
+    printf("       net  -version\n");
+    printf("       net  -help\n");
     printf("\n");
     printf("Miscellaneous:\n");
     printf("  -help             Print help information\n");
     printf("  -version          Print version information\n");
-    printf("  -dump             Dump display info\n");
-    printf("  -log              save system log to data/display/hdmi_log.tar.gz\n");
+    printf("  -dump             Dump network info\n");
+    printf("  -log              save network log to data/net/net_log.tar.gz\n");
 }
 
 int main(int argc, char **argv)
