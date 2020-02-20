@@ -51,7 +51,6 @@ static struct {
     {"cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies","CPU Freqs : ", enter_handle},
     {"cat /sys/class/devfreq/*.gpu/available_frequencies","GPU Freqs : ", enter_handle},
     {"cat /sys/class/devfreq/dmc/available_frequencies","DDR Freqs : ", enter_handle},
-    {"cat /sys/class/devfreq/dmc/available_frequencies","DDR Freqs : ", enter_handle},
     {"cat /proc/meminfo | grep MemTotal", "", enter_handle},
     {"dumpsys uimode|grep mCurUiMode", "UiMode:", enter_handle},
     {0,0, NULL},
