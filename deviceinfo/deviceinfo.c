@@ -6,7 +6,7 @@
 #include "handle.h"
 
 #define MODULE_NAME     "deviceinfo"
-#define MODULE_VERSION     "V0.4"
+#define MODULE_VERSION     "V0.5"
 
 static void usage(void);
 static void dump_info(void);
@@ -150,6 +150,27 @@ void dump_drm_info()
   }
 }
 
+void save_last_log(void)
+{
+    FILE *fstream=NULL;
+    char cmd[1024 * 1024];
+    memset(cmd, 0, sizeof(cmd));
+    printf("==========================Print last log console start==================================\n");
+    if(shell("cat /sys/fs/pstore/console-ramoops-0",cmd)!=0){
+       sprintf(cmd," ");
+    }
+    printf("%s \n",cmd);
+    memset(cmd, 0, sizeof(cmd));
+    printf("==========================Print last log console end==================================\n\n");
+    printf("==========================Print last log android start==================================\n");
+    if(shell("logcat -L",cmd)!=0){
+       sprintf(cmd," ");
+    }
+    printf("%s \n",cmd);
+    memset(cmd, 0, sizeof(cmd));
+    printf("==========================Print last log android end==================================\n");
+}
+
 void save_system_log(void)
 {
     FILE *fstream=NULL;
@@ -225,6 +246,7 @@ static void usage(void)
     printf("       deviceinfo  -devicetest \n");
     printf("       deviceinfo  -stresstest\n");
     printf("       deviceinfo  -log\n");
+    printf("       deviceinfo  -lastlog\n");
     printf("       deviceinfo  -dump\n");
     printf("       deviceinfo  -dvfs\n");
     printf("       deviceinfo  -help\n");
@@ -235,6 +257,7 @@ static void usage(void)
     printf("  -dvfs             Dump kernel dvfs info\n");
     printf("  -dump             Dump system info\n");
     printf("  -log              save system log to data/deviceinfo\n");
+    printf("  -lastlog          Print device lastlog \n");
     printf("  -stresstest       start stresstest\n");
     printf("  -devicetest       start devicetest (agingtest)\n");
 }
@@ -278,6 +301,12 @@ int main(int argc, char **argv)
    if(!strcmp(argv[1], "-log"))
    {
        save_system_log();
+       return 0;
+   }
+   else
+   if(!strcmp(argv[1], "-lastlog"))
+   {
+       save_last_log();
        return 0;
    }
    else

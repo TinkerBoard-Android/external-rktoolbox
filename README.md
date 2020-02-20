@@ -1,6 +1,6 @@
 # rktoolbox
 
-发布版本：0,4
+发布版本：0.4
 
 日期：2019.11
 
@@ -173,7 +173,7 @@ d.编写Android.mk和rktoolbox一起编译，编译出的模块名字需要添�
 | **模块**             | **工具版本** | **命令说明**                                                 | **备注** |
 | -------------------- | ------------ | ------------------------------------------------------------ | -------- |
 | rktoolbox            | V0.3         | rktoolbox <br/>-version:<br/> 打印工具版本号<br/>-help:<br/>打印帮助信息<br/>-dump:<br/>打印所有子命令的-dump结果 |          |
-| rktoolbox deviceinfo | V0.4         | rktoolbox deviceinfo<br/>-help：<br/>打印帮助信息<br/>-dump:<br/>打印设备信息，包含设备名称，序列号、版本信息、芯片信息、基本显示信息、安全信息cpu/ddr/gpu频率支持列表等<br/>-dvfs:<br/>打印内核相关信息：当前cpu/ddr/gpu等频率及支持列表，opp频率电压表等；<br/>-log:<br/>抓取系统日志并保存到data/deviceinfo下供拉取; <br/>-stresstest:<br/>启动stresstest测试; <br/>-devicetest:<br/>启动devicetest老化测试; <br/>-version:打印版本信息||
+| rktoolbox deviceinfo | V0.5         | rktoolbox deviceinfo<br/>-help：<br/>打印帮助信息<br/>-dump:<br/>打印设备信息，包含设备名称，序列号、版本信息、芯片信息、基本显示信息、安全信息cpu/ddr/gpu频率支持列表等<br/>-dvfs:<br/>打印内核相关信息：当前cpu/ddr/gpu等频率及支持列表，opp频率电压表等；<br/>-log:<br/>抓取系统日志并保存到data/deviceinfo下供拉取; <br/>-lastlog:<br/>打印上次关机前设备日志（lastlog）; <br/>-stresstest:<br/>启动stresstest测试; <br/>-devicetest:<br/>启动devicetest老化测试; <br/>-version:打印版本信息 ||
 |rktoolbox dr-g | V1.6   |  rktoolbox dr-g<br/>-help:<br/>打印帮助信息<br/>-dump:会从系统中获取平台与显示组件相关版本信息，打包到/data/dr-g-file/dumpInfo.tar供模块人员分析<br/>-sys-set perf:<br/>设置性能模式，该命令执行后，CPU，GPU，DDR 设置最高频率，温控关闭<br/>-sys-set info:<br/>获取当前状态，该命令执行后，回显打印当前 CPU，GPU，DDR 当前频率，温控状态<br/>-sys-set gpu low/mid/high:<br/>设置 GPU 三档频率，常用于 GPU 瓶颈的应用调试<br/> -sys-set cpu low/mid/high:<br/>设置 cpu 三档频率，常用于 cpu 瓶颈的应用调试<br/>-sys-set ddr low/mid/high:<br/>设置 ddr 三档频率，常用于 ddr 瓶颈的应用调试<br/> -sys-set reset:<br/>CPU，DDR，GPU 恢复系统调频模式，温控恢复<br/>-io-qos set/get:<br/>总线优先级设置或查询<br/>-rga info:<br/>打印 RGA 版本，硬件支持的数据格式，缩放倍数。最大输入输出分辨率信息|         |
 |rktoolbox display | V1.0 | rktoolbox display<br/>-help：<br/>打印帮助信息<br/>-dump:<br/>打印设备显示相关信息，包括基本的分辨率、dpi、fbinfo、hdmi设备状态、支持格式及分辨率列表，hdcp1x状态，cec工作状态，hdmi详细工作状态，如：clk，分辨率，颜色，baseparameter显示分区信息等<br/>-log:<br/>hdmi显示信息日志一键收集，包括版本信息，属性表信息，window信息，surfacefliner信息，hdmi状态信息，hdmi ctrl和phy寄存器信息，hdmi edid信息，hdmi cec信息，显示分区信息，内核和logcat信息等，启动后将收集信息打包到data/display/hdmi_log.tar.gz，供拉取。 | |
 | |  | | |
